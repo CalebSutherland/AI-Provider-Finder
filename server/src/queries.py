@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import text
 from db import engine
+from models import Provider
 
 
-def search_providers(specialty: str, hcpcs_prefix: str, city: Optional[str] = None, state: Optional[str] = None, zipcode: Optional[str] = None):
+def search_providers(specialty: str, hcpcs_prefix: str, city: Optional[str] = None, state: Optional[str] = None, zipcode: Optional[str] = None) -> List[Provider]:
     if zipcode:
         location_condition = "p.rndrng_prvdr_zip5 = :zipcode"
         location_params = {"zipcode": zipcode}
@@ -17,12 +18,19 @@ def search_providers(specialty: str, hcpcs_prefix: str, city: Optional[str] = No
     query = text(
         f"""
         SELECT 
-            p.rndrng_npi,
-            p.rndrng_prvdr_last_org_name,
-            p.rndrng_prvdr_first_name,
-            p.rndrng_prvdr_city,
-            p.rndrng_prvdr_state_abrvtn,
-            p.rndrng_prvdr_type
+            p.rndrng_npi AS id,
+            p.rndrng_prvdr_last_org_name AS last_name,
+            p.rndrng_prvdr_first_name AS first_name,
+            p.rndrng_prvdr_crdntls AS credentials,
+            p.rndrng_prvdr_st1 AS street_1,
+            p.rndrng_prvdr_st2 AS street_2,
+            p.rndrng_prvdr_city AS city,
+            p.rndrng_prvdr_state_abrvtn AS state,
+            p.rndrng_prvdr_zip5 AS zipcode,
+            p.rndrng_prvdr_type AS specialty,
+            p.rndrng_prvdr_mdcr_prtcptg_ind AS accepts_medicare,
+            p.tot_benes AS total_benes,
+            p.bene_avg_age AS avg_age
         FROM providers p
         JOIN provider_services s 
             ON p.rndrng_npi = s.rndrng_npi
@@ -43,4 +51,4 @@ def search_providers(specialty: str, hcpcs_prefix: str, city: Optional[str] = No
     with engine.connect() as conn:
         rows = conn.execute(query, params).fetchall()
 
-    return [r._mapping for r in rows]
+    return [Provider(**dict(row._mapping)) for row in rows]

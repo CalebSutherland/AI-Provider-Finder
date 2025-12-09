@@ -6,7 +6,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.5rem;
+  padding: 1rem;
   border-bottom: 1px solid black;
 }
 
@@ -15,7 +15,7 @@
   text-align: center;
 }
 
-.heroContainer {
+.hero_container {
   text-align: center;
   max-width: 56rem;
   padding: 0 2rem;
@@ -29,13 +29,23 @@
 }
 
 .hero h1 span {
-  color: #0ea5e9;
+  color: var(--primary-color);
 }
 
-.hero p {
+.hero_text {
   font-size: 1.25rem;
   line-height: 1.75rem;
   max-width: 42rem;
   margin-inline: auto;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.main {
+  padding: 0rem 1rem 5rem;
+}
+
+.main_container {
+  max-width: 88rem;
+  margin-inline: auto;
+  padding: 0rem 2rem;
 }

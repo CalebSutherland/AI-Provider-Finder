@@ -1,18 +1,24 @@
-from typing import Union
+from typing import List, Union
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-from models import SearchRequest
+from models import Provider, SearchRequest
 from service import natural_language_search
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+origins = [
+    "http://localhost",
+    "http://localhost:5173",
+]
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.post("/api/search_providers")
 def handle_search(req: SearchRequest):
