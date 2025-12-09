@@ -21,10 +21,8 @@ def natural_language_search(user_query: str) -> Dict:
         missing_params = []
         if not params.specialty:
             missing_params.append("specialty")
-        if not params.city:
-            missing_params.append("city")
-        if not params.state:
-            missing_params.append("state")
+        if not params.zipcode and not (params.city and params.state):
+            missing_params.append("location (zipcode or city and state)")
         if not params.hcpcs_prefix:
             missing_params.append("procedure/service type")
 
@@ -38,9 +36,10 @@ def natural_language_search(user_query: str) -> Dict:
 
         results = search_providers(
             specialty=params.specialty,
+            hcpcs_prefix=params.hcpcs_prefix,
             city=params.city,
             state=params.state,
-            hcpcs_prefix=params.hcpcs_prefix,
+            zipcode=params.zipcode,
         )
 
         return {
@@ -62,6 +61,7 @@ queries = [
     "Find a cardiologist in Seattle, WA who does echocardiograms",
     "I need an orthopedic surgeon in Portland OR for knee surgery",
     "Looking for dermatologist in Miami FL for skin biopsy",
+    "I need a doctor for a check up in Ashland Oregon"
 ]
 
 for query in queries:

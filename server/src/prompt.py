@@ -158,10 +158,16 @@ You are a healthcare search assistant that extracts structured information from 
 
 Your task is to return:
 - specialty: MUST be chosen EXACTLY from the Medicare specialty list below
-- city: Proper case (e.g., "Seattle")
-- state: Two-letter uppercase state abbreviation (e.g., "WA")
+- zipcode: If a 5-digit ZIP code is mentioned, extract it. Otherwise leave null.
+- city: Proper case (e.g., "Seattle"). Only required if zipcode is not provided.
+- state: Two-letter uppercase state abbreviation (e.g., "WA"). Only required if zipcode is not provided.
 - hcpcs_prefix: The HCPCS code prefix that best matches the requested procedure (use most specific available)
 - confidence: Rate your confidence in the specialty match as "high", "medium", or "low"
+
+LOCATION EXTRACTION PRIORITY:
+1. If a ZIP code is mentioned, extract it and leave city/state as null
+2. If no ZIP code, extract city and state
+3. You MUST provide either a zipcode OR both city and state
 
 STRICT RULES FOR SPECIALTY SELECTION:
 1. You MUST pick ONE AND ONLY ONE specialty EXACTLY as it appears in the list below.
@@ -248,9 +254,22 @@ def parse_provider_query(
                     f"Specialty '{parsed_data.specialty}' not in approved list"
                 )
 
+             # Validate location parameters
+            if not parsed_data.zipcode and not (parsed_data.city and parsed_data.state):
+                logger.warning("Neither zipcode nor city/state provided")
+                if attempt < max_retries:
+                    continue
+                raise ValueError("Must provide either zipcode or both city and state")
+
+            location_str = (
+                f"zipcode={parsed_data.zipcode}"
+                if parsed_data.zipcode
+                else f"location={parsed_data.city}, {parsed_data.state}"
+            )
+
             logger.info(
                 f"Successfully parsed: specialty={parsed_data.specialty}, "
-                f"location={parsed_data.city}, {parsed_data.state}, "
+                f"{location_str}, "
                 f"hcpcs={parsed_data.hcpcs_prefix}, confidence={parsed_data.confidence}"
             )
 
