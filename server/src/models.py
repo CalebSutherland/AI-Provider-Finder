@@ -15,3 +15,7 @@ class ProviderSearchParams(BaseModel):
     confidence: Optional[str] = Field(
         None, description="Confidence level: high, medium, low"
     )
+
+class SearchRequest(BaseModel):
+    query: str
+    
