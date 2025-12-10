@@ -1,9 +1,5 @@
 .search {
   margin-inline: auto;
   max-width: 48rem;
-}
-
-.footer {
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }

@@ -88,6 +88,7 @@ class NLSResponse(BaseModel):
     success: bool
     parsed_params: dict
     results: list[Provider]
+    hcpcs_desc: str | None = None
     count: int | None = None
     error: str | None = None
 
@@ -96,5 +97,4 @@ class RankedProvidersResponse(BaseModel):
     success: bool
     parsed_params: dict
     results: list[ScoredProvider]
-    count: int | None = None
     error: str | None = None

@@ -23,10 +23,28 @@ export interface SearchParams {
   confidence: string;
 }
 
-export interface ProviderSearch {
+export interface ProviderSearchResponse {
   success: boolean;
   parsed_params: SearchParams;
   results: Provider[]
-  count: number
-  error?: string
+  hcpcs_desc?: string;
+  count?: number;
+  error?: string;
+}
+
+export interface ScoredProvider extends Provider {
+  score: number
+  rank: number
+}
+
+export interface ProviderScoreRequest {
+  query: string;
+  provider_ids: number[]
+}
+
+export interface ProviderScoreResponse {
+  success: boolean;
+  parsed_params: SearchParams;
+  results: ScoredProvider[]
+  error?: string;
 }

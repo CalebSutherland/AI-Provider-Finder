@@ -1,25 +1,62 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 import ProviderTable from "../components/ProviderTable";
-import styles from "./Home.module.css";
-
-import { fetchSearchResults } from "../api/providers";
 import SearchInput from "../components/SearchInput";
 import SearchTips from "../components/SearchTips";
+import ScoreDialog from "../components/ScoreDialog";
+import styles from "./Home.module.css";
+
+import { fetchSearchResults, scoreProviders } from "../api/providers";
+import {
+  type ProviderScoreRequest,
+  type ProviderScoreResponse,
+  type ProviderSearchResponse,
+} from "../types/provider";
 
 export default function Home() {
-  const [userQuery, setUserQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [scoreQuery, setScoreQuery] = useState("");
+  const [tableData, setTableData] = useState<
+    ProviderSearchResponse | ProviderScoreResponse | null
+  >(null);
 
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["providerSearch"],
-    queryFn: () => fetchSearchResults(userQuery),
-    enabled: false,
+  const searchMutation = useMutation({
+    mutationFn: (req: string) => fetchSearchResults(req),
+    onSuccess: (data) => {
+      setTableData(data);
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const scoreMutation = useMutation({
+    mutationFn: (req: ProviderScoreRequest) => scoreProviders(req),
+    onSuccess: (data) => {
+      setTableData(data);
+    },
+  });
+
+  const {
+    mutate: searchMutate,
+    isPending: isSearchPending,
+    error: searchError,
+    data: searchData,
+  } = searchMutation;
+
+  const {
+    mutate: scoreMutate,
+    isPending: isScorePending,
+    error: scoreError,
+  } = scoreMutation;
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    refetch();
+    searchMutate(searchQuery);
+  };
+
+  const handleScoreSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const provider_ids = searchData ? searchData.results.map((p) => p.id) : [];
+    scoreMutate({ query: scoreQuery, provider_ids: provider_ids });
   };
 
   return (
@@ -40,10 +77,14 @@ export default function Home() {
           </p>
           <div>
             <SearchInput
-              userQuery={userQuery}
-              setUserQuery={setUserQuery}
-              handleSubmit={handleSubmit}
+              userQuery={searchQuery}
+              placeholder="Ex: I need a cardiologist who can do an ultrasound near downtown Chicago"
+              setUserQuery={setSearchQuery}
+              handleSubmit={handleSearchSubmit}
             />
+            <p className={styles.search_footer}>
+              Describe what you're looking for in plain language
+            </p>
           </div>
         </div>
       </section>
@@ -54,19 +95,50 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.main_container}>
-          {isLoading && <p>Loading providers...</p>}
-          {error && <p>Error fetching providers</p>}
-          {!isLoading && !error && data && (
-            <ProviderTable providerSearch={data} />
+          {searchError && <p>Error fetching providers</p>}
+          {scoreError && <p>Error scoring providers</p>}
+
+          {(tableData || isSearchPending || isScorePending) && (
+            <div>
+              <div className={styles.results}>
+                {searchData && searchData.success ? (
+                  <p>
+                    Found <b>{searchData.results.length}</b>{" "}
+                    <b>{searchData.parsed_params.specialty}</b> provider
+                    {searchData.results.length != 1 ? "s" : ""} in{" "}
+                    <b>
+                      {searchData.parsed_params.city},{" "}
+                      {searchData.parsed_params.state}
+                      {searchData.parsed_params.zipcode
+                        ? ", " + searchData.parsed_params.zipcode
+                        : ""}
+                    </b>{" "}
+                    with services related to <b>{searchData.hcpcs_desc}</b>{" "}
+                  </p>
+                ) : (
+                  isSearchPending && <p>Searching for providers</p>
+                )}
+              </div>
+
+              <ProviderTable
+                tableData={tableData}
+                isLoading={isSearchPending || isScorePending}
+              />
+
+              {tableData?.success && (
+                <div className={styles.dialog}>
+                  <p>Find the best providers for you</p>
+                  <ScoreDialog
+                    userQuery={scoreQuery}
+                    setUserQuery={setScoreQuery}
+                    handleSubmit={handleScoreSubmit}
+                  />
+                </div>
+              )}
+            </div>
           )}
         </div>
       </main>
-
-      <footer>
-        <div>
-          <p>Helping you find the right healthcare, one search at a time.</p>
-        </div>
-      </footer>
     </div>
   );
 }

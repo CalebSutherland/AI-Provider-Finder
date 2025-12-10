@@ -3,13 +3,14 @@ import styles from "./SearchTips.module.css";
 
 export default function SearchTips() {
   const tips = [
-    "Use a zipcode to narrow down results in your location",
-    "Include either doctor type or service needed in prompt",
-    "Specify state if searching for a smaller city",
+    "Include the city and state, or a zipcode.",
+    "Mention the provider type and the service you're looking for.",
+    "Be specific to narrow results down",
   ];
 
   return (
-    <div className={styles.tips}>
+    <div className={styles.tips_container}>
+      <p className={styles.header}>Tips for the best results</p>
       {tips.map((tip) => (
         <span key={tip} className={styles.row}>
           <AddTaskIcon fontSize="large" color="primary" />

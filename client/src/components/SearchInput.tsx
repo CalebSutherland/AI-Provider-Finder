@@ -5,15 +5,15 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import styles from "./SearchInput.module.css";
 
-// import TextField from "@mui/material/TextField";
-
 interface SearchInputProps {
   userQuery: string;
+  placeholder: string;
   setUserQuery: React.Dispatch<React.SetStateAction<string>>;
   handleSubmit: (e: React.FormEvent) => void;
 }
 export default function SearchInput({
   userQuery,
+  placeholder,
   setUserQuery,
   handleSubmit,
 }: SearchInputProps) {
@@ -29,16 +29,18 @@ export default function SearchInput({
           fullWidth
           value={userQuery}
           onChange={(e) => setUserQuery(e.target.value)}
-          placeholder="Search for a provider"
+          placeholder={placeholder}
           sx={{ height: "3.5rem", ml: 1, flex: 1 }}
         />
-        <Button variant="contained" type="submit" sx={{ mr: 1 }}>
+        <Button
+          variant="contained"
+          type="submit"
+          disabled={userQuery == ""}
+          sx={{ mr: 1 }}
+        >
           Search
         </Button>
       </Paper>
-      <p className={styles.footer}>
-        Describe what you're looking for in plain language
-      </p>
     </div>
   );
 }

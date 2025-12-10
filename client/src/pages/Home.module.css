@@ -40,18 +40,40 @@
   margin-bottom: 2rem;
 }
 
+.search_footer {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
 .tips {
-  max-width: 32rem;
-  margin-inline: auto;
-  padding: 0 1rem 4rem;
+  padding: 1rem 1rem 3rem;
 }
 
 .main {
-  padding: 0rem 1rem 5rem;
+  padding: 1rem 1rem 5rem;
 }
 
 .main_container {
   max-width: 88rem;
   margin-inline: auto;
   padding: 0rem 2rem;
+}
+
+.results {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.dialog p {
+  font-size: 2rem;
+  font-weight: 600;
 }

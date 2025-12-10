@@ -7,6 +7,7 @@ from models import (
 )
 from queries import get_provider_demographics, search_providers
 from prompt import parse_provider_query, parse_user_demographics
+from constants import HCPCS_MAPPINGS
 
 
 def natural_language_search(user_query: str) -> NLSResponse:
@@ -52,6 +53,7 @@ def natural_language_search(user_query: str) -> NLSResponse:
             success=True,
             parsed_params=params.model_dump(),
             results=results,
+            hcpcs_desc=HCPCS_MAPPINGS.get(params.hcpcs_prefix),
             count=len(results),
         )
 
@@ -105,7 +107,6 @@ def rank_providers_nl(user_input: str, providers: list[int]) -> RankedProvidersR
             success=True,
             parsed_params=user_demographics.model_dump(),
             results=score_results,
-            count=len(score_results),
         )
 
     except Exception:
