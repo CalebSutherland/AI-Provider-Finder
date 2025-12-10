@@ -11,7 +11,7 @@
 }
 
 .hero {
-  padding: 4rem 1rem 3rem;
+  padding: 4rem 1rem;
   text-align: center;
 }
 
@@ -38,6 +38,12 @@
   max-width: 42rem;
   margin-inline: auto;
   margin-bottom: 2rem;
+}
+
+.tips {
+  max-width: 32rem;
+  margin-inline: auto;
+  padding: 0 1rem 4rem;
 }
 
 .main {

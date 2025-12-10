@@ -6,6 +6,7 @@ import styles from "./Home.module.css";
 
 import { fetchSearchResults } from "../api/providers";
 import SearchInput from "../components/SearchInput";
+import SearchTips from "../components/SearchTips";
 
 export default function Home() {
   const [userQuery, setUserQuery] = useState("");
@@ -45,6 +46,10 @@ export default function Home() {
             />
           </div>
         </div>
+      </section>
+
+      <section className={styles.tips}>
+        <SearchTips />
       </section>
 
       <main className={styles.main}>
