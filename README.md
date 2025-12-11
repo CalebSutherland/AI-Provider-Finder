@@ -49,15 +49,14 @@ Search results are displayed in an interactive table showing:
 
 After getting search results, you can refine by scoring providers:
 
-1. Click "Find the best providers for you"
-2. Enter information about yourself or your needs
+1. Click "Rank Providers"
+2. Enter information about yourself
 3. Providers will be re-ranked with relevance scores
 
 **Example Scoring Queries:**
 
 - "23 year old white male"
-- "Senior citizen with heart condition"
-- "Pediatric patient needing surgery"
+- "Asian woman aged 68"
 
 ## Project Structure
 
@@ -75,6 +74,7 @@ client/
 │   │   ├── Home.tsx              # Main home page
 │   │   └── Home.module.css       # Page styles
 │   └── types/
+│       └── provider.ts           # Types
 ├── public/
 ├── index.html
 ├── package.json
@@ -313,8 +313,8 @@ Extends Provider with ranking information:
 | Field               | Type    | Description                   |
 | ------------------- | ------- | ----------------------------- |
 | All Provider fields | -       | Inherits all Provider fields  |
-| `score`             | number  | Relevance score (0-1)         |
-| `rank`              | integer | Ranking position (default: 0) |
+| `score`             | number  | Relevance score (0-100)         |
+| `rank`              | integer | Ranking position |
 
 ## Response Formats
 
