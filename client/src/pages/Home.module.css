@@ -3,11 +3,22 @@
 }
 
 .header {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header div {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  border-bottom: 1px solid black;
+  gap: 0.5rem;
+  height: 3rem;
+  max-width: 1440px;
+  padding: 0 1rem;
+  margin-inline: auto;
+}
+
+.header span {
+  font-size: 1.4rem;
+  font-weight: 600;
 }
 
 .hero {

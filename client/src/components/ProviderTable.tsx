@@ -1,9 +1,42 @@
 import { DataGrid, type GridRowsProp, type GridColDef } from "@mui/x-data-grid";
+import LinearProgress from "@mui/material/LinearProgress";
+import styles from "./ProviderTable.module.css";
+
 import type {
   ProviderScoreResponse,
   ProviderSearchResponse,
   ScoredProvider,
 } from "../types/provider";
+
+function ScoreCell({ score }: { score: number }) {
+  const getColor = (score: number) => {
+    if (score >= 80) return "#4caf50";
+    if (score >= 60) return "#ffeb3b";
+    if (score >= 40) return "#ff9800";
+    return "#f44336";
+  };
+
+  return (
+    <div className={styles.score}>
+      <p>{score}</p>
+      <div style={{ flex: 1, marginLeft: "0.5rem" }}>
+        <LinearProgress
+          variant="determinate"
+          value={score}
+          sx={{
+            height: 8,
+            borderRadius: 4,
+            backgroundColor: "#e0e0e0",
+            "& .MuiLinearProgress-bar": {
+              backgroundColor: getColor(score),
+              borderRadius: 4,
+            },
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 interface ProviderTableProps {
   tableData: ProviderSearchResponse | ProviderScoreResponse | null;
@@ -44,9 +77,14 @@ export default function ProviderTable({
   }
 
   if (isScoreResponse(tableData)) {
-    columns.push(
-      { field: "score", headerName: "Score", width: 100 },
-      { field: "rank", headerName: "Rank", width: 100 }
+    columns.unshift(
+      { field: "rank", headerName: "Rank", width: 100 },
+      {
+        field: "score",
+        headerName: "Score",
+        width: 150,
+        renderCell: (params) => <ScoreCell score={params.value} />,
+      }
     );
   }
 
@@ -67,7 +105,11 @@ export default function ProviderTable({
 
     if (isScoreResponse(tableData)) {
       const scoredProv = prov as ScoredProvider;
-      return { ...baseRow, score: scoredProv.score, rank: scoredProv.rank };
+      return {
+        ...baseRow,
+        score: Number(scoredProv.score.toFixed(2)),
+        rank: scoredProv.rank,
+      };
     }
 
     return baseRow;

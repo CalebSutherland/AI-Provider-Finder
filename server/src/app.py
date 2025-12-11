@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import NLSResponse, RankRequest, RankedProvidersResponse, SearchRequest
-from service import natural_language_search, rank_providers_nl
+from .models import NLSResponse, RankRequest, RankedProvidersResponse, SearchRequest
+from .service import natural_language_search, rank_providers_nl
 
 app = FastAPI()
 

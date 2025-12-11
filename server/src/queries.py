@@ -1,6 +1,6 @@
 from sqlalchemy import text, bindparam
-from db import engine
-from models import Provider, ProviderDemographics
+from .db import engine
+from .models import Provider, ProviderDemographics
 
 
 def search_providers(

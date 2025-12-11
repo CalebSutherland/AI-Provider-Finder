@@ -1,13 +1,13 @@
-from models import (
+from .models import (
     NLSResponse,
     ProviderDemographics,
     RankedProvidersResponse,
     UserDemographics,
     ScoredProvider,
 )
-from queries import get_provider_demographics, search_providers
-from prompt import parse_provider_query, parse_user_demographics
-from constants import HCPCS_MAPPINGS
+from .queries import get_provider_demographics, search_providers
+from .prompt import parse_provider_query, parse_user_demographics
+from .constants import HCPCS_MAPPINGS
 
 
 def natural_language_search(user_query: str) -> NLSResponse:
@@ -100,6 +100,13 @@ def rank_providers_nl(user_input: str, providers: list[int]) -> RankedProvidersR
 
         score_results.sort(key=lambda p: p.score, reverse=True)
 
+        # Normalize so top is 100
+        top_score = score_results[0].score if score_results else 0
+        if top_score > 0:
+            for p in score_results:
+                p.score = (p.score / top_score) * 100
+
+        score_results.sort(key=lambda p: p.score, reverse=True)
         for i, p in enumerate(score_results):
             p.rank = i + 1
 
@@ -178,27 +185,3 @@ def compute_score(provider: ProviderDemographics, user: UserDemographics):
             race_score = (user_race / total) * 100
 
     return (sex_score * 0.4) + (race_score * 0.4) + (age_score * 0.2)
-
-
-# providers = natural_language_search("I need an x-ray near Chicago")
-# ids = []
-
-# for p in providers.results:
-#     ids.append(p.id)
-
-# res = rank_providers_nl("I am a 65 year old white male", ids)
-
-# for r in res.results:
-#     print(r)
-
-
-# queries = [
-#     "I need a cardiologist who can do an ultrasound near downtown Chicago",
-#     "Find me a family doctor in Austin, Texas",
-#     "Looking for an orthopedic surgeon in Miami FL who does knee replacement",
-#     "I need someone who can do a chest X-ray in Seattle, Washington",
-#     "Find a cardiologist in Seattle, WA who does echocardiograms",
-#     "I need an orthopedic surgeon in Portland OR for knee surgery",
-#     "Looking for dermatologist in Miami FL for skin biopsy",
-#     "I need a doctor for a check up in Ashland Oregon"
-# ]

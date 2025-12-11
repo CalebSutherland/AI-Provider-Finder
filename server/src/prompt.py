@@ -2,8 +2,8 @@ from openai import OpenAI
 from typing import Optional
 import logging
 
-from models import ProviderSearchParams, UserDemographics
-from constants import HCPCS_MAPPINGS, MEDICARE_SPECIALTIES
+from .models import ProviderSearchParams, UserDemographics
+from .constants import HCPCS_MAPPINGS, MEDICARE_SPECIALTIES
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

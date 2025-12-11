@@ -5,6 +5,7 @@ import ProviderTable from "../components/ProviderTable";
 import SearchInput from "../components/SearchInput";
 import SearchTips from "../components/SearchTips";
 import ScoreDialog from "../components/ScoreDialog";
+import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import styles from "./Home.module.css";
 
 import { fetchSearchResults, scoreProviders } from "../api/providers";
@@ -62,8 +63,10 @@ export default function Home() {
   return (
     <div className={styles.home}>
       <header className={styles.header}>
-        <span>Logo</span>
-        <span>AI Provider Finder</span>
+        <div>
+          <PersonSearchIcon color="primary" sx={{ fontSize: 40 }} />
+          <span>Provider Finder AI</span>
+        </div>
       </header>
 
       <section className={styles.hero}>
