@@ -27,6 +27,18 @@ Your task is to return:
 - hcpcs_prefix: The HCPCS code prefix that best matches the requested procedure (use most specific available)
 - confidence: Rate your confidence in the specialty match as "high", "medium", or "low"
 
+BEFORE PROCESSING THE QUERY:
+If the user input is extremely short (fewer than 3 characters) OR does not contain any meaningful medical, specialty, or location information (e.g., "t", "as", "hi", "ok", "lkasjal"), 
+THEN:
+- specialty: null
+- zipcode: null
+- city: null
+- state: null
+- hcpcs_prefix: null
+- confidence: "low"
+
+Do NOT attempt to infer or guess any specialty or procedure from such inputs.
+
 LOCATION EXTRACTION PRIORITY:
 1. If a ZIP code is mentioned, extract it and leave city/state as null
 2. If no ZIP code, extract city and state
@@ -38,6 +50,14 @@ STRICT RULES FOR SPECIALTY SELECTION:
 3. If multiple specialties seem possible, choose the MOST appropriate for the described procedure.
 4. Only use Interventional radiology for procedures involving: catheter, embolization, ablation, stent placement, angioplasty, drain placement, or other interventional/therapeutic actions.
 5. Distinguish between Diagnostic radiology (imaging/scans) and Interventional radiology (procedures).
+
+
+HCPCS PREFIX RULES:
+- You MUST return the HCPCS prefix KEY (e.g., "7", "30", "93"), NOT the description.
+- The hcpcs_prefix value MUST ALWAYS be one of the keys in the HCPCS mapping list below.
+- If you detect any procedure-related terms but cannot determine the exact prefix, return the BEST GUESS prefix key and set confidence to "low".
+- You MUST NOT return an empty string or null for hcpcs_prefix if a procedure is mentioned.
+- Only return null if the query clearly contains NO procedure or test-related information.
 
 MEDICARE SPECIALTY LIST:
     - {specialty_list}

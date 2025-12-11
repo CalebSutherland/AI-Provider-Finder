@@ -1,15 +1,17 @@
+from dotenv import load_dotenv
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .models import NLSResponse, RankRequest, RankedProvidersResponse, SearchRequest
 from .service import natural_language_search, rank_providers_nl
 
+
+load_dotenv()
 app = FastAPI()
 
-origins = [
-    "http://localhost",
-    "http://localhost:5173",
-]
+origins = [os.getenv("CLIENT_URL")]
 
 app.add_middleware(
     CORSMiddleware,
