@@ -16,7 +16,7 @@ def fetch_providers(
 
     offset = (page - 1) * page_size
 
-    conditions = ["p.rndrng_prvdr_type = :specialty"]
+    conditions = []
     params = {
         "specialty": specialty,
         "page_size": page_size,
@@ -34,6 +34,8 @@ def fetch_providers(
     elif state:
         conditions.append("p.rndrng_prvdr_state_abrvtn = :state")
         params["state"] = state
+
+    conditions.append("p.rndrng_prvdr_type = :specialty")
 
     if hcpcs_prefix:
         conditions.append(

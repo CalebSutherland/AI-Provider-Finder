@@ -10,6 +10,6 @@ def parse_search(query: str):
         raise QueryParseError(f"Provider specialty not recognized")
 
     if not params.zipcode and not params.state:
-        raise QueryParseError("Must provide zipcode or state")
+        raise QueryParseError("Must provide at least zipcode or state")
 
     return params

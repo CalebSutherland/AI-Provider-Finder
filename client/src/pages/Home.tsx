@@ -1,64 +1,92 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
-import ProviderTable from "../components/ProviderTable";
 import SearchInput from "../components/SearchInput";
 import SearchTips from "../components/SearchTips";
-import ScoreDialog from "../components/ScoreDialog";
-import PersonSearchIcon from "@mui/icons-material/PersonSearch";
+import ProviderTable from "../components/ProviderTable";
 import styles from "./Home.module.css";
+import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 
-import { fetchSearchResults, scoreProviders } from "../api/providers";
-import {
-  type ProviderScoreRequest,
-  type ProviderScoreResponse,
-  type ProviderSearchResponse,
-} from "../types/provider";
+import { fetchSearchResults, parseSearchInput } from "../api/search";
+import type { SearchParams } from "../types/search";
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [scoreQuery, setScoreQuery] = useState("");
-  const [tableData, setTableData] = useState<
-    ProviderSearchResponse | ProviderScoreResponse | null
-  >(null);
+  const [isNewSearch, setIsNewSearch] = useState(false);
+  const [searchParams, setSearchParams] = useState<SearchParams | null>(null);
+  const [paginationModel, setPaginationModel] = useState({
+    pageSize: 10,
+    page: 0,
+  });
 
   const searchMutation = useMutation({
-    mutationFn: (req: string) => fetchSearchResults(req),
+    mutationFn: parseSearchInput,
     onSuccess: (data) => {
-      setTableData(data);
+      setSearchParams(data);
+      setPaginationModel({ pageSize: 10, page: 0 });
+      setIsNewSearch(true);
+    },
+    onError: (error: Error) => {
+      console.error("Search parsing failed:", error);
     },
   });
 
-  const scoreMutation = useMutation({
-    mutationFn: (req: ProviderScoreRequest) => scoreProviders(req),
-    onSuccess: (data) => {
-      setTableData(data);
-    },
+  const searchQuery = useQuery({
+    queryKey: [
+      "searchResults",
+      searchParams,
+      paginationModel.page,
+      paginationModel.pageSize,
+    ],
+    queryFn: () =>
+      fetchSearchResults(
+        searchParams!,
+        paginationModel.page + 1,
+        paginationModel.pageSize
+      ),
+    enabled: !!searchParams,
+    placeholderData: (previousData) => previousData,
   });
 
-  const {
-    mutate: searchMutate,
-    isPending: isSearchPending,
-    error: searchError,
-    data: searchData,
-  } = searchMutation;
+  if (isNewSearch && searchQuery.data && !searchQuery.isFetching) {
+    setIsNewSearch(false);
+  }
 
-  const {
-    mutate: scoreMutate,
-    isPending: isScorePending,
-    error: scoreError,
-  } = scoreMutation;
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    searchMutate(searchQuery);
+  const handleSearch = (input: string) => {
+    setSearchParams(null);
+    searchMutation.mutate(input);
   };
 
-  const handleScoreSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const provider_ids = searchData ? searchData.results.map((p) => p.id) : [];
-    scoreMutate({ query: scoreQuery, provider_ids: provider_ids });
-  };
+  let location: string = "";
+  let tableMessage: React.ReactNode = null;
+
+  if (searchParams?.zipcode) {
+    location = `${searchParams.city}, ${searchParams.state}, ${searchParams.zipcode}`;
+  } else if (searchParams?.city) {
+    location = `${searchParams.city}, ${searchParams.state}`;
+  } else if (searchParams?.state) {
+    location = searchParams.state;
+  }
+
+  if (searchMutation.isPending) {
+    tableMessage = <p>Parsing user input...</p>;
+  } else if (isNewSearch || (searchQuery.isFetching && !searchQuery.data)) {
+    tableMessage = <p>Loading providers...</p>;
+  } else if (searchParams && searchQuery.data) {
+    tableMessage = (
+      <p>
+        Found{" "}
+        <b>
+          {searchQuery.data?.count} {searchParams?.specialty}
+        </b>{" "}
+        providers in <b>{location} </b>
+        {searchParams?.hcpcs_description && (
+          <>
+            with services related to <b>{searchParams.hcpcs_description}</b>
+          </>
+        )}
+      </p>
+    );
+  }
 
   return (
     <div className={styles.home}>
@@ -80,10 +108,8 @@ export default function Home() {
           </p>
           <div>
             <SearchInput
-              userQuery={searchQuery}
               placeholder="Ex: I need a cardiologist who can do an ultrasound near downtown Chicago"
-              setUserQuery={setSearchQuery}
-              handleSubmit={handleSearchSubmit}
+              handleSubmit={handleSearch}
             />
             <p className={styles.search_footer}>
               Describe what you're looking for in plain language
@@ -98,46 +124,33 @@ export default function Home() {
 
       <main className={styles.main}>
         <div className={styles.main_container}>
-          {searchError && <p>Error fetching providers</p>}
-          {scoreError && <p>Error scoring providers</p>}
+          {searchMutation.error && (
+            <p>
+              Error parsing input: <b>{searchMutation.error.message}</b>
+            </p>
+          )}
+          {searchQuery.error && (
+            <p>
+              Error searching for providers: <b>{searchQuery.error.message}</b>
+            </p>
+          )}
 
-          {(tableData || isSearchPending || isScorePending) && (
+          {searchParams && !searchParams.hcpcs_prefix && (
+            <p>Warning: No provider service detected</p>
+          )}
+
+          {!searchMutation.isIdle && (
             <div>
-              <div className={styles.results}>
-                {searchData && searchData.success ? (
-                  <p>
-                    Found <b>{searchData.results.length}</b>{" "}
-                    <b>{searchData.parsed_params.specialty}</b> provider
-                    {searchData.results.length != 1 ? "s" : ""} in{" "}
-                    <b>
-                      {searchData.parsed_params.city},{" "}
-                      {searchData.parsed_params.state}
-                      {searchData.parsed_params.zipcode
-                        ? ", " + searchData.parsed_params.zipcode
-                        : ""}
-                    </b>{" "}
-                    with services related to <b>{searchData.hcpcs_desc}</b>{" "}
-                  </p>
-                ) : (
-                  isSearchPending && <p>Searching for providers</p>
-                )}
-              </div>
-
+              {tableMessage}
               <ProviderTable
-                tableData={tableData}
-                isLoading={isSearchPending || isScorePending}
+                data={searchQuery.data}
+                isLoading={
+                  searchMutation.isPending ||
+                  (searchQuery.isFetching && !searchQuery.isFetched)
+                }
+                paginationModel={paginationModel}
+                setPaginationModel={setPaginationModel}
               />
-
-              {tableData?.success && (
-                <div className={styles.dialog}>
-                  <p>Find the best providers for you</p>
-                  <ScoreDialog
-                    userQuery={scoreQuery}
-                    setUserQuery={setScoreQuery}
-                    handleSubmit={handleScoreSubmit}
-                  />
-                </div>
-              )}
             </div>
           )}
         </div>
